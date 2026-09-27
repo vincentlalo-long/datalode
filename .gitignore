@@ -48,6 +48,7 @@ Assetbundles/
 # Output directories & Media Artifacts
 output/
 outputs/
+dataset/
 exports/
 extracted/
 data/input/
