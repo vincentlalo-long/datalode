@@ -2,4 +2,6 @@
 UnityPy>=1.25.0
 pillow>=10.0.0
 pyyaml>=6.0
+# Texture atlas packing (Step 2: image-to-spine)
+rectpack>=0.2.2
 tqdm>=4.66.0

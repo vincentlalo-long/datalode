@@ -1,7 +1,7 @@
-# 🎼 spine-headless-pipeline
+# 🏮 karakuri-forge
 
-> **Automated 2D Spine Asset Decryption, Dataset Normalization & Headless WebGL Rendering Engine.**  
-> *A high-throughput CLI pipeline to extract, classify, and render Spine 2D skeletal assets without a graphical interface.*
+> **Generic 2D Spine Asset Pipeline: Extract, Pack, Catalog & Render — no GUI needed.**  
+> *From encrypted Unity bundles or loose PNG layers to standardized Spine datasets and transparent renders.*
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
 [![Spine](https://img.shields.io/badge/Spine-3.7%20%7C%203.8-orange.svg)](http://esotericsoftware.com/)
@@ -12,71 +12,77 @@
 
 ## 📖 Overview
 
-**`spine-headless-pipeline`** (formerly *orcust-spine*) is a standalone engineering toolkit designed to reverse-engineer, parse, catalog, and render 2D binary skeletal animation assets (**Spine 3.7 / 3.8**) extracted from game client bundles.
+**`karakuri-forge`** (formerly *orcust-spine / spine-headless-pipeline*) is a standalone toolkit for 2D skeletal-animation assets (**Spine 3.7 / 3.8**). It works in two independent directions:
 
-The pipeline automates the entire journey from encrypted Unity asset archives to standardized character datasets and ultra-high-resolution, alpha-trimmed transparent standing illustrations.
+1. **Game → Data:** decrypt Unity bundles, catalog characters, render transparent stills / driving videos.
+2. **Layers → Spine:** pack loose layered PNGs (e.g. `see-through` output) into a standard `PNG + .atlas` pair for rigging and motion retargeting.
 
 ```text
        ┌────────────────────────────────────────────────────────┐
-       │             Encrypted Game Client Bundles              │
-       │                 (Unity .asset files)                   │
-       └───────────────────────────┬────────────────────────────┘
-                                   │
-                                   ▼
+       │  A. Encrypted Game Bundles      B. Layered PNGs          │
+       │     (Unity .asset files)           (see-through / PSD)   │
+       └───────────────┬────────────────────────┬───────────────┘
+                       │                        │
+                       ▼                        ▼
        ┌────────────────────────────────────────────────────────┐
-       │                 spine-headless-pipeline                │
+       │                    karakuri-forge                      │
        │                                                        │
        │  [1. Asset Extractor]     ──► .skel, .atlas, .png      │
-       │  [2. Portrait Sync]       ──► Official 256x256 cards   │
-       │  [3. Dataset Normalizer]  ──► 1,300+ Tagged Characters │
-       │  [4. Headless Renderer]   ──► 2K Transparent RGBA PNGs │
+       │  [2. Portrait Sync]       ──► 256x256 face cards       │
+       │  [3. Dataset Normalizer]  ──► Tagged catalog + manifest│
+       │  [4. Headless Renderer]   ──► Transparent PNGs / clips │
+       │  [5. Atlas Packer]        ──► PNG layers → .png+.atlas │
        └───────────────────────────┬────────────────────────────┘
                                    │
                                    ▼
        ┌────────────────────────────────────────────────────────┐
-       │                   Downstream Targets                   │
-       │  - AI Vision / Multimodal Dataset Training             │
-       │  - 2D Game Modding & Animation Research                │
-       │  - Real-time Interactive WebGL & Desktop Visualizers   │
+       │                   Downstream (optional)                │
+       │  - AI Vision / Motion-LoRA datasets                    │
+       │  - Game modding, archival, web viewers                 │
+       │  - karakuri-desk (desktop companion, Tauri + Python)   │
        └────────────────────────────────────────────────────────┘
 ```
+
+`karakuri-desk` is **one** consumer of this pipeline, not its purpose. You can use forge without ever building a companion.
+
+Part of the **Karakuri** ecosystem:
+- **karakuri-forge** (this repo) — forges the body: assets, atlases, renders.
+- **karakuri-desk** (planned) — houses the soul: transparent `idle/talk` loops + LLM/TTS on desktop.
 
 ---
 
 ## ✨ Key Features
 
-- 🧩 **Automated Asset Extraction (`extract.py`)**: Decrypts and unpacks proprietary Unity game packages. Extracts binary skeleton files (`.skel`), texture atlas mappings (`.atlas`), and high-resolution sprite textures (`.png`). Tested against *CounterSide* as the reference corpus (1,300+ character and skin models).
-- 🎴 **Face Card & Portrait Synchronizer (`extract_portraits.py`)**: Batch-extracts official square portraits directly from UI asset bundles and maps them to their respective character directories automatically.
-- 📊 **Dataset Normalization & Binary Inspection (`process_dataset.py`)**:
-  - Scans raw binary `.skel` data to automatically discover animation tracks (`idle`, `touch`, `attack`, `special`, etc.).
-  - Classifies entities into structured taxonomies: `units` (counters, soldiers, mechas), `bosses`, `raids`, `operators`, and `NPCs`.
-  - Generates JSON metadata registries for automated batch processing.
-- 🎨 **Headless WebGL Rendering Engine (`render_fullbody.py`)**:
-  - Powered by headless Chromium/Edge and PixiJS with the Spine WebGL runtime.
-  - Generates crisp full-body standing illustrations (~1200x2100+) in pure RGBA format.
-  - Automatically computes dynamic character bounding boxes, centers coordinates, and trims transparent alpha margins without requiring a local web server or manual human adjustment.
+- 🧩 **Asset Extraction (`extract.py`)**: Decrypts proprietary Unity packages (XOR 212-byte header + UnityPy). Extracts `.skel`, `.atlas`, `.png`. Reference corpus: *CounterSide* (1,300+ models), but the code is game-agnostic.
+- 🎴 **Portrait Sync (`extract_portraits.py`)**: Batch-extracts face cards from UI bundles and mirrors them as `portrait.png` per character.
+- 📊 **Dataset Normalizer (`process_dataset.py`)**:
+  - Heuristic animation discovery in `.skel` binaries (`idle`, `touch`, `attack`, ...).
+  - Rule-based taxonomy: `units` (counter/soldier/mecha), `bosses`, `raids`, `operators`, `NPCs`.
+  - Emits `manifest.json` for batch jobs.
+- 🎨 **Headless Renderer (`render_fullbody.py`)**:
+  - Local HTTP server + headless Chromium/Edge + PixiJS Spine runtime. No external web server needed.
+  - Dynamic bounds, auto-center, alpha-trim (`Pillow.getbbox()`).
+  - Outputs `full_body.png` (~1200x2100 RGBA); extendable to short `idle.mp4` driving clips for motion transfer.
+- 📦 **Atlas Packer (`pack_atlas.py` + `modules/atlas/packer.py`) — NEW**:
+  - Input: folder of loose RGBA layers. Output: single `atlas.png + atlas.atlas` (Spine libGDX plaintext).
+  - Alpha-trim, MaxRects bin-packing (`rectpack`), power-of-two pages, anti-bleed padding.
+  - No GPU needed. Verified: 12 layers in 0.09s, no-overlap guarantee, clear overflow errors.
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Prerequisites & Environment
+### 1. Prerequisites
 
-- **Python 3.10+** (Python 3.11 recommended)
-- **Google Chrome** or **Microsoft Edge** (utilized for headless WebGL rendering)
-
-Install Python dependencies:
-```bash
-pip install -r requirements.txt
-```
+- **Python 3.10+** (3.11 recommended)
+- **Chrome / Edge** (only for rendering)
+- `pip install -r requirements.txt` (includes `UnityPy`, `Pillow`, `rectpack`, `tqdm`)
 
 ### 2. Configuration
-Copy `.env.example` to `.env` and specify your game client directory:
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env`:
 ```env
 CS_STREAMING_ASSETS_DIR=/path/to/game/StreamingAssets
 OUTPUT_DIR=outputs
@@ -84,77 +90,56 @@ OUTPUT_DIR=outputs
 
 ---
 
-## 🛠️ CLI Pipeline Usage
+## 🛠️ CLI Usage
 
-### Step 1: Extract Spine Assets
-Extract `.skel`, `.atlas`, and texture `.png` files from game bundles:
+### A. Game → Data
+
 ```bash
-# Search and list matching character bundles without extracting
+# List bundles without extracting
 python extract.py --name "c_yoo_mi_na" --list
 
-# Extract character Spine assets
+# Extract
 python extract.py --name "illust_nkm_unit_c_yoo_mi_na.asset"
-```
 
-### Step 2: Extract & Synchronize Portraits
-Extract official 256x256 face cards and mirror them to character folders:
-```bash
+# Portraits
 python extract_portraits.py --sync
-```
-*Outputs are saved to `outputs/portraits/` and mirrored to each character's directory as `portrait.png`.*
 
-### Step 3: Catalog & Classify Dataset
-Audit character integrity, detect animation tracks, and organize metadata:
-```bash
-# Analyze extracted assets and generate character metadata
+# Catalog & manifest
 python process_dataset.py --input outputs --catalog
-```
 
-### Step 4: Headless Full-Body Rendering
-Render Spine data into transparent RGBA PNGs:
-```bash
-# Render specific characters by name keyword
+# Render
 python render_fullbody.py -n hilde
-python render_fullbody.py -n yoo_mi_na
-
-# Render all extracted characters in batch
 python render_fullbody.py --all
-
-# Force re-rendering existing images
 python render_fullbody.py -n hilde --force
 ```
 
----
+### B. Layers → Spine atlas
 
-## 📁 Output Dataset Structure
+```bash
+# Pack see-through / PSD-exported layers into Spine atlas
+python pack_atlas.py --input kurisu_layers/ --out kurisu_atlas/ --name kurisu
+# -> kurisu_atlas/kurisu.png + kurisu_atlas/kurisu.atlas
 
-```text
-outputs/
-├── nkm_unit_c_hilde/
-│   ├── UNIT_ILLUST_C_HILDE.skel   # Spine 3.7 binary skeleton data
-│   ├── UNIT_ILLUST_C_HILDE.atlas  # Spine texture atlas definition
-│   ├── UNIT_ILLUST_C_HILDE.png    # Sprite atlas texture sheet
-│   ├── portrait.png               # Official 256x256 character face card
-│   └── full_body.png              # Rendered transparent full-body art (~1200x2100)
-├── portraits/                     # Central repository of extracted face cards
-└── metadata.json                  # Normalized catalog with animation tags
+python pack_atlas.py --help
+# --max-size {1024,2048,4096}  --padding 2  --no-pow2
 ```
 
 ---
 
-## 💡 Practical Applications
+## 💡 Use Cases (independent of any companion)
 
-- **Game Modding & Asset Archival**: Preservation and structural analysis of 2D game animations.
-- **AI Vision Datasets**: Automated pipeline to generate ground-truth character illustrations with pose and animation tags for training generative models.
-- **Virtual Avatars & Desktop Daemons**: Providing clean, lightweight motion assets and rendered sprites for interactive desktop runtimes.
+- **Modding & archival:** clean extraction + manifest for any Unity Spine title.
+- **AI datasets:** stills + animation tags for vision models; driving clips for Motion-LoRA / LivePortrait.
+- **Atlas tooling:** `pack_atlas.py` works on any OC / AI-generated character, no game needed.
+- **Companion-ready (optional):** feed renders into `karakuri-desk` (Tauri transparent `<video>` + Python LLM/TTS state machine).
 
 ---
 
 ## ⚖️ Disclaimer
 
-This repository is developed strictly for **educational, non-commercial, and open-source research purposes**.
-- **No copyrighted game assets, binary textures, or commercial audio clips are hosted or distributed in this repository.**
-- All third-party game assets belong to their respective copyright holders (Studiobside Co., Ltd. / Nexon). Users are solely responsible for supplying their own legally acquired assets.
+Built strictly for **educational, non-commercial, open-source research**.
+- **No game assets, textures, or audio are hosted here.** `.gitignore` blocks `*.skel`, `*.atlas`, `*.asset`, `outputs/`, `dataset/`, `tools/*.exe`.
+- All game assets belong to their owners (e.g. Studiobside / Nexon). Supply your own legally obtained files.
 
 ---
 
