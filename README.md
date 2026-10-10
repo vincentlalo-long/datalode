@@ -1,29 +1,46 @@
-# OmniSpine
+# DataLode
 
-Toolkit for poking at 2D Spine assets (CounterSide). Built for fun and learning.
+Data mining from multiple sources. One folder per source under `sources/`,
+mined data lands in `data/<source>/`. Nothing mined is committed.
 
-## What it does
+## Sources
 
-- `extract.py` — unpacks Unity bundles (XOR header + UnityPy) into `.skel/.atlas/.png`
-- `extract_portraits.py` — batch-extracts portrait cards
-- `process_dataset.py` — sorts folders, applies taxonomy, writes `manifest.json`
-- `render_fullbody.py` — renders stills via headless Chrome + PixiJS (needs Chromium)
-- `pack_atlas.py` — packs a folder of loose PNGs into `.png + .atlas`
+- `sources/counterside/` — Unity Spine assets: decrypt bundles (XOR header +
+  UnityPy) into `.skel/.atlas/.png`, batch portraits, taxonomy + `manifest.json`,
+  headless renders, loose-PNG atlas packer.
 
-Local corpus (not committed): 998 characters, 996 stills, 697 portraits.
+## Data layout
+
+```
+data/<source>/
+  outputs/   raw extracts
+  dataset/   organized + manifest.json
+```
+
+Current: `data/counterside/` — 998 characters, 996 stills, 697 portraits (~6GB).
 
 ## Run
 
 ```bash
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env   # point it at your game install
+# deps per source
+pip install -r sources/counterside/requirements.txt
 
-python extract.py --name "mina" --list
-python process_dataset.py --input outputs --catalog
+# point at your sources
+cp .env.example .env
+
+# counterside pipeline (run from repo root)
+python sources/counterside/extract.py --name "mina" --list
+python sources/counterside/extract.py --name "illust_nkm_unit_c_yoo_mi_na.asset"
+python sources/counterside/extract_portraits.py --sync
+python sources/counterside/process_dataset.py --catalog
+python sources/counterside/render_fullbody.py -n hilde   # needs Chromium
+python sources/counterside/pack_atlas.py --input <png_folder> --out <atlas_folder> --name <name>
 ```
+
+Paths default to `data/counterside/`; override with `OUTPUT_DIR` / `DATASET_DIR`
+in `.env` (relative to repo root, or absolute).
 
 ## Notes
 
-- Game assets belong to Studiobside/Nexon. Bring your own files, nothing hosted here.
+- Assets belong to their owners (e.g. Studiobside/Nexon). Bring your own files.
 - Personal research only, no redistribution.

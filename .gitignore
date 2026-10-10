@@ -45,14 +45,9 @@ gameplay-jsons/
 StreamingAssets/
 Assetbundles/
 
-# Output directories & Media Artifacts
-output/
-outputs/
-dataset/
+# Output data & Media Artifacts (DO NOT COMMIT)
+data/
 exports/
-extracted/
-data/input/
-data/output/
 *.mp4
 *.webm
 *.avi

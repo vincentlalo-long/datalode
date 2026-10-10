@@ -17,7 +17,7 @@ ROOT_DIR = Path(__file__).resolve().parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from config import DEFAULT_OUTPUT_DIR
+from config import DEFAULT_DATASET_DIR, DEFAULT_OUTPUT_DIR
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -293,7 +293,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "-d", "--dest",
         type=Path,
-        default=ROOT_DIR / "dataset",
+        default=DEFAULT_DATASET_DIR,
         help="Target dataset directory (default: ./dataset)",
     )
     parser.add_argument(

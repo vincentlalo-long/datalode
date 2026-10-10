@@ -3,7 +3,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
+# Repo root (this file lives in <root>/sources/<name>/; data dirs stay at root)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # Load .env variables into os.environ
@@ -25,10 +26,18 @@ def load_env(env_file: Path | None = None) -> None:
 load_env()
 
 STREAMING_DIR_STR = os.getenv("CS_STREAMING_ASSETS_DIR", "")
-OUTPUT_DIR_STR = os.getenv("OUTPUT_DIR", "outputs")
+OUTPUT_DIR_STR = os.getenv("OUTPUT_DIR", "")
+DATASET_DIR_STR = os.getenv("DATASET_DIR", "")
+
+SOURCE_DATA_DIR = BASE_DIR / "data" / "counterside"
 
 DEFAULT_OUTPUT_DIR = (
-    Path(OUTPUT_DIR_STR) if Path(OUTPUT_DIR_STR).is_absolute() else BASE_DIR / OUTPUT_DIR_STR
+    Path(OUTPUT_DIR_STR) if Path(OUTPUT_DIR_STR).is_absolute()
+    else (BASE_DIR / OUTPUT_DIR_STR if OUTPUT_DIR_STR else SOURCE_DATA_DIR / "outputs")
+)
+DEFAULT_DATASET_DIR = (
+    Path(DATASET_DIR_STR) if Path(DATASET_DIR_STR).is_absolute()
+    else (BASE_DIR / DATASET_DIR_STR if DATASET_DIR_STR else SOURCE_DATA_DIR / "dataset")
 )
 
 
