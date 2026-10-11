@@ -44,6 +44,7 @@ python sources/counterside/pack_atlas.py --input <png_folder> --out <atlas_folde
 python sources/counterside/extract_backgrounds.py        # extract all 780+ cutscene CGs
 python sources/counterside/extract_voices.py             # extract 21,000+ Japanese voice clips
 python sources/counterside/build_stories.py              # build story chapters + web reader
+python sources/counterside/serve_story.py                # launch browser and read stories offline
 ```
 
 
