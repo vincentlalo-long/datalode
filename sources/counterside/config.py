@@ -39,6 +39,10 @@ DEFAULT_DATASET_DIR = (
     Path(DATASET_DIR_STR) if Path(DATASET_DIR_STR).is_absolute()
     else (BASE_DIR / DATASET_DIR_STR if DATASET_DIR_STR else SOURCE_DATA_DIR / "dataset")
 )
+DEFAULT_BACKGROUNDS_DIR = SOURCE_DATA_DIR / "backgrounds"
+DEFAULT_VOICES_DIR = SOURCE_DATA_DIR / "voices"
+DEFAULT_CUTSCENES_DIR = SOURCE_DATA_DIR / "cutscenes"
+
 
 
 # Get StreamingAssets path from .env or fallback
@@ -46,3 +50,14 @@ def get_default_streaming_dir() -> Path:
     if STREAMING_DIR_STR:
         return Path(STREAMING_DIR_STR)
     return Path(r"D:\Game\CounterSide\Game\CounterSide\Data\StreamingAssets")
+
+
+CUTSCENE_JSON_DIR_STR = os.getenv("CS_CUTSCENE_JSON_DIR", "")
+
+
+# Get cutscene JSON directory from .env or fallback
+def get_default_cutscene_json_dir() -> Path:
+    if CUTSCENE_JSON_DIR_STR:
+        return Path(CUTSCENE_JSON_DIR_STR)
+    return Path(r"D:\Game\CounterSide\Server\RevivalSide\gameplay-jsons\StreamingAssets\ab_script_cutscene\luac")
+
