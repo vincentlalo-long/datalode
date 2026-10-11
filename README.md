@@ -19,9 +19,10 @@ data/<source>/
   backgrounds/  high-res cutscene CGs and backgrounds
   voices/       Japanese voice lines (WAV)
   cutscenes/    assembled story chapters + interactive index.html reader
+  banners/      gacha recruitment art, loading wallpapers, and promo banners
 ```
 
-Current: `data/counterside/` — 1,041 characters, 783 backgrounds, 21,444 JP voices, 4,156 story chapters.
+Current: `data/counterside/` — 1,041 characters, 783 backgrounds, 21,444 JP voices, 4,156 story chapters, 828 banners.
 
 ## Run
 
@@ -43,6 +44,7 @@ python sources/counterside/pack_atlas.py --input <png_folder> --out <atlas_folde
 # additional mining & stories
 python sources/counterside/extract_backgrounds.py        # extract all 780+ cutscene CGs
 python sources/counterside/extract_voices.py             # extract 21,000+ Japanese voice clips
+python sources/counterside/extract_banners.py            # extract 820+ gacha banners & wallpapers
 python sources/counterside/build_stories.py              # build story chapters + web reader
 python sources/counterside/serve_story.py                # launch browser and read stories offline
 ```
